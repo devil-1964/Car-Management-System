@@ -2,11 +2,35 @@
 @tailwind components;
 @tailwind utilities;
 
-*::-webkit-scrollbar {
-  display: none;
-}
+
 
 .slick-slide > div{
   margin: 0 5px;
   padding: 20px;
+}
+
+body::-webkit-scrollbar{
+  width: 0px;
+}
+
+*::-webkit-scrollbar{
+  width: 12px;
+
+}
+
+*::-webkit-scrollbar-track {
+  background-color: gainsboro; /* Light orange for the track */
+  border-radius: 10px;
+}
+
+/* Scrollbar thumb */
+*::-webkit-scrollbar-thumb {
+  background-color: gray; /* Bright orange for the thumb */
+  border-radius: 10px;
+  border: 3px solid gray; /* Border to add a bit of spacing */
+}
+
+/* Scrollbar thumb on hover */
+*::-webkit-scrollbar-thumb:hover {
+  background-color: gainsboro; /* Darker orange on hover */
 }

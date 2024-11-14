@@ -61,7 +61,7 @@ const Dashboard = () => {
     const toggleSortOrder = () => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
 
     return (
-        <div className='container max-sm:px-5 md:px-20'>
+        <div className='container max-sm:px-5 pl-20'>
             <div className='flex justify-between font-semibold items-center flex-wrap gap-2'>
                 <div className='text-xl sm:text-2xl text-orange-700'>My Cars</div>
                 <div className='flex gap-3'>
@@ -73,7 +73,7 @@ const Dashboard = () => {
                         onChange={(e) => setSearchTerm(e.target.value)} 
                     />
                     <button className='flex bg-orange-400 hover:bg-gray-300 p-2 rounded-md items-center gap-1'>
-                        <Plus /> Add new Car
+                        <Plus /> <span className='max-sm:hidden'>Add new Car</span>
                     </button>
                 </div>
             </div>

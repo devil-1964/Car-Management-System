@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link, Outlet } from 'react-router-dom';
 import logo from "../assets/logo.png";
-import { LogIn, Menu, User, LogOut } from 'lucide-react'; // Added User and LogOut icons
+import { LogIn, Menu, User, LogOut, Home } from 'lucide-react'; // Added User and LogOut icons
 
 const RootLayout = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
     const [isAuthenticated, setIsAuthenticated] = useState(true); // Add authentication state
-    const [user, setUser] = useState(null); // User state
+    const [user, setUser] = useState(); // User state
 
     const toggleDrawer = () => setIsOpen(!isOpen);
 
@@ -36,7 +36,7 @@ const RootLayout = () => {
     return (
         <>
             <header
-                className={`fixed top-0 left-0 w-full transition-all font-semibold font-mono duration-300 ${isScrolled
+                className={`fixed  top-0 left-0 w-full transition-all font-semibold font-mono duration-300 ${isScrolled
                     ? 'bg-white shadow-md text-[var(--color-black)]'
                     : 'bg-transparent text-red-700'
                     }`}
@@ -51,9 +51,17 @@ const RootLayout = () => {
                     <div className="hidden md:flex space-x-4">
                         {isAuthenticated ? (
                             <>
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2 hover:text-black">
+                                    <Link
+                                        to="/dashboard"
+
+                                    >
+                                        <Home className="w-5" />
+                                    </Link>
+                                </div>
+                                <div className="flex items-center gap-2 ">
                                     <User className="w-5" />
-                                    <span>{user?.name}</span>
+                                    <span className='text-black text-sm'>{user?.name}</span>
                                 </div>
                                 <button
                                     onClick={handleLogout}
@@ -102,13 +110,23 @@ const RootLayout = () => {
                 >
                     &times;
                 </button>
-                <nav className="flex flex-col space-y-4">
+                <nav className="flex flex-col space-y-2">
                     {isAuthenticated ? (
                         <>
-                            <div className="flex items-center gap-2 text-white">
+                            <div className="ml-2 flex items-center gap-2 text-white">
                                 <User className="w-5" />
                                 <span>{user?.name}</span>
                             </div>
+                            <div className="hover:bg-[var(--color-orange-200)]  p-2 rounded flex items-center gap-2 text-white">
+                                <Link
+                                    to="/dashboard"
+className='flex gap-2'
+                                >
+                                    <Home className="w-5" />
+                                    Home
+                                </Link>
+                            </div>
+
                             <button
                                 onClick={handleLogout}
                                 className="hover:bg-[var(--color-orange-200)] p-2 rounded flex items-center gap-2"
