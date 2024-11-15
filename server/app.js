@@ -17,7 +17,7 @@ cloudinary.config({
 
 // Enable CORS for specific domain (you can add more if needed)
 app.use(cors({
-    origin: ["http://localhost:5173",process.env.FRONTEND_API,"https://car-management-system-devil-1964s-projects.vercel.app"],
+    origin: process.env.FRONTEND_API,
     credentials: true,
 }));
 
