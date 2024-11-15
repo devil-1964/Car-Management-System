@@ -7,7 +7,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import LoadingSpinner from './components/LoadingSpinner.jsx';
 import { Toaster } from 'react-hot-toast';
 import PrivateRoute from './components/PrivateRoute.jsx';
-import CloudinaryUploader from './pages/CloudinaryUploader.jsx';
+// import CloudinaryUploader from './pages/CloudinaryUploader.jsx';
 
 // Lazy load pages
 const LoginPage = lazy(() => import('./pages/LoginPage.jsx'));
@@ -17,64 +17,68 @@ const ProductPage = lazy(() => import('./pages/ProductPage.jsx'));
 const NewCarPage = lazy(() => import('./pages/NewCarPage.jsx'));
 
 const router = createBrowserRouter([
-  {
-    element: <RootLayout />,
-    children: [
-      {
-        path: '/login',
-        element: (
-          <Suspense fallback={<LoadingSpinner />}>
-            <LoginPage />
-          </Suspense>
-        ),
-      },
-      {
-        path: '/cloud',
-        element: (
-          <Suspense fallback={<LoadingSpinner />}>
-            <CloudinaryUploader />
-          </Suspense>
-        ),
-      },
-      {
-        path: '/register',
-        element: (
-          <Suspense fallback={<LoadingSpinner />}>
-            <SignupPage />
-          </Suspense>
-        ),
-      },
-      {
-        element: <PrivateRoute />,
-        children: [
-          {
-            path: '/dashboard',
-            element: (
-              <Suspense fallback={<LoadingSpinner />}>
-                <Dashboard />
-              </Suspense>
-            ),
-          },
-          {
-            path: '/dashboard/:id',
-            element: (
-              <Suspense fallback={<LoadingSpinner />}>
-                <ProductPage />
-              </Suspense>
-            ),
-          },
-          {
-            path: '/dashboard/new',
-            element: (
-              <Suspense fallback={<LoadingSpinner />}>
-                <NewCarPage />
-              </Suspense>
-            ),
-          },
-        ],
-      },
-    ],
-  },
+{
+  path: '/',
+  element: (<LoginPage/>),
+},
+{
+  element: <RootLayout />,
+  children: [
+    {
+      path: '/login',
+      element: (
+        <Suspense fallback={<LoadingSpinner />}>
+          <LoginPage />
+        </Suspense>
+      ),
+    },
+    // {
+    //   path: '/cloud',
+    //   element: (
+    //     <Suspense fallback={<LoadingSpinner />}>
+    //       <CloudinaryUploader />
+    //     </Suspense>
+    //   ),
+    // },
+    {
+      path: '/register',
+      element: (
+        <Suspense fallback={<LoadingSpinner />}>
+          <SignupPage />
+        </Suspense>
+      ),
+    },
+    {
+      element: <PrivateRoute />,
+      children: [
+        {
+          path: '/dashboard',
+          element: (
+            <Suspense fallback={<LoadingSpinner />}>
+              <Dashboard />
+            </Suspense>
+          ),
+        },
+        {
+          path: '/dashboard/:id',
+          element: (
+            <Suspense fallback={<LoadingSpinner />}>
+              <ProductPage />
+            </Suspense>
+          ),
+        },
+        {
+          path: '/dashboard/new',
+          element: (
+            <Suspense fallback={<LoadingSpinner />}>
+              <NewCarPage />
+            </Suspense>
+          ),
+        },
+      ],
+    },
+  ],
+},
 ]);
 
 createRoot(document.getElementById('root')).render(

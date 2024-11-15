@@ -1,6 +1,8 @@
-import { ChevronLeft, ChevronRight, Edit2, Trash2, Upload, UploadCloud, X } from "lucide-react";
-import { useState } from "react";
+import { ChevronLeft, ChevronRight, Edit2, Trash2, UploadCloud, X } from "lucide-react";
+import { useState, useEffect } from "react";
+import axios from "axios";
 import Slider from "react-slick";
+import { useParams } from "react-router-dom";
 
 const SampleNextArrow = (props) => {
     const { onClick } = props;
@@ -25,31 +27,33 @@ const SamplePrevArrow = (props) => {
 };
 
 const ProductPage = () => {
-    const [car, setCar] = useState({
-        id: 1,
-        title: "Luxury Sedan",
-        tags: ["Luxury", "Comfort"],
-        description: "A luxurious car with premium features.",
-        images: [
-            "https://www.aiscribbles.com/img/variant/large-preview/8989/?v=1f4774",
-            "https://www.aiscribbles.com/img/variant/large-preview/8989/?v=1f4774",
-            "https://www.aiscribbles.com/img/variant/large-preview/8989/?v=1f4774",
-            "https://www.aiscribbles.com/img/variant/large-preview/8989/?v=1f4774",
-            "https://www.aiscribbles.com/img/variant/large-preview/8989/?v=1f4774",
-            "https://www.aiscribbles.com/img/variant/large-preview/8989/?v=1f4774",
-            "https://www.aiscribbles.com/img/variant/large-preview/8989/?v=1f4774",
-            "https://www.aiscribbles.com/img/variant/large-preview/8989/?v=1f4774",
-            "https://www.aiscribbles.com/img/variant/large-preview/8989/?v=1f4774",
-            "https://www.aiscribbles.com/img/variant/large-preview/8989/?v=1f4774",
-            "https://www.aiscribbles.com/img/variant/large-preview/8989/?v=1f4774",
-            "https://www.aiscribbles.com/img/variant/large-preview/8989/?v=1f4774",
-            "https://www.aiscribbles.com/img/variant/large-preview/8989/?v=1f4774",
-            // Add more images here
-        ],
-    });
-
+    const [car, setCar] = useState(null); // State for car details
+    const [editCar, setEditCar] = useState(null); // State for editing car details
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [editCar, setEditCar] = useState(car);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const params = useParams(); // Get the car ID from URL params
+
+    useEffect(() => {
+        const fetchCarDetails = async () => {
+            try {
+                const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/cars/${params.id}`, {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+                        'Content-Type': 'application/json' // Optional: Set Content-Type to JSON
+                    }
+                });
+                setCar(response.data);
+                setEditCar(response.data); // Set the initial state for editing
+            } catch (error) {
+                setError('Failed to fetch car details');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchCarDetails();
+    }, [params.id]); // Fetch car details when the car ID in the URL changes
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -69,9 +73,22 @@ const ProductPage = () => {
         });
     };
 
-    const saveChanges = () => {
-        setCar(editCar);
-        setIsModalOpen(false);
+    const saveChanges = async () => {
+        try {
+            const response = await axios.put(
+                `${import.meta.env.VITE_API_URL}/api/cars/${editCar.id}`,
+                editCar,
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+                    }
+                }
+            );
+            setCar(response.data); // Update the car details after saving
+            setIsModalOpen(false);
+        } catch (error) {
+            setError('Failed to save car details');
+        }
     };
 
     const settings = {
@@ -86,20 +103,32 @@ const ProductPage = () => {
         prevArrow: <SamplePrevArrow />,
     };
 
+    if (loading) {
+        return <div className="flex justify-center items-center text-xl">Loading...</div>;
+    }
+
+    if (error) {
+        return <div className="text-red-500 text-xl text-center">{error}</div>;
+    }
+
     return (
         <div className="mx-24 max-sm:mx-8">
             <h1 className="text-4xl font-semibold">Car Details</h1>
             <div className="flex flex-row max-sm:flex-wrap">
                 <div className="w-[50vw] max-md:w-[90vw]">
-                    <Slider {...settings} className="slider-container gap-4">
-                        {car.images.map((img, index) => (
-                            <div key={index} className="w-full border rounded-md shadow-md hover:shadow-lg transition-all flex justify-between flex-col h-[360px] max-sm:h-auto">
-                                <img src={img} alt="Car" className="w-fit mx-auto h-full object-center rounded-md mb-2" />
-                            </div>
-                        ))}
-                    </Slider>
+                    {car.img && (car.img.length > 0) ?
+                        (<Slider {...settings} className="slider-container gap-4">
+                            {car.img.map((img, index) => (
+                                <div key={index} className="w-full border rounded-md shadow-md hover:shadow-lg transition-all flex justify-between flex-col h-[360px] max-sm:h-auto">
+                                    <img src={img} alt="Car" className="w-full mx-auto h-full object-cover rounded-md mb-2" />
+                                </div>
+                            ))}
+                        </Slider>) : (<div className="items-center font-mono font-semibold h-full text-xl text-gray-600 justify-center max-w-[400px] min-w-[250px] bg-gray-100 w-full mt-5 border max-sm:w-fit mx-2 max-sm:mx-auto rounded-md shadow-md hover:shadow-lg transition-all flex  flex-col max-h-[400px] min-h-[160px] max-sm:h-auto">
+                            No Image
+                        </div>)
+                    }
                 </div>
-                <div className="pl-6 pt-10 text-xl font-mono flex flex-col">
+                <div className="pl-6 pt-10 text-xl font-mono flex flex-col mr-10">
                     <div className="border-b-2 border-gray-200 font-semibold">
                         <span>{car.title}</span>
                     </div>
@@ -172,12 +201,12 @@ const ProductPage = () => {
                                     accept="image/*"
                                     className="opacity-0 absolute w-full h-full cursor-pointer"
                                 />
-                                <button className="bg-gray-400  border-4  max-sm:mx-auto border-gray-300 border-dashed flex gap-2 text-white py-2 px-4 rounded">
-                                   <UploadCloud/> <span className=" max-sm:hidden">Upload Images</span>
+                                <button className="bg-gray-400 border-4 max-sm:mx-auto border-gray-300 border-dashed flex gap-2 text-white py-2 px-4 rounded">
+                                    <UploadCloud /> <span className="max-sm:hidden">Upload Images</span>
                                 </button>
                             </div>
                             <div className="gap-2 mt-2 flex flex-row overflow-x-auto imgScroll">
-                                {editCar.images.slice(0, 10).map((img, index) => (
+                                {editCar.img.slice(0, 10).map((img, index) => (
                                     <div key={index} className="relative max-w-[100px] min-w-[90px] h-auto">
                                         <img
                                             src={img}

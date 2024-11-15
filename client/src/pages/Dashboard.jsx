@@ -123,7 +123,8 @@ const Dashboard = () => {
                         {sortedCars.map(car => (
                             <div
                                 key={car._id}
-                                className='p-4 hover:bg-gray-100 border rounded-md shadow-md hover:shadow-lg transition-all flex justify-between flex-col h-[260px]'
+                                onClick={()=>navigate(`/dashboard/${car._id}`)}
+                                className='cursor-pointer p-4 hover:bg-gray-100 border rounded-md shadow-md hover:shadow-lg transition-all flex justify-between flex-col h-[260px]'
                             >
                                 <div>
                                     <img
@@ -152,7 +153,8 @@ const Dashboard = () => {
                         </thead>
                         <tbody>
                             {sortedCars.map(car => (
-                                <tr key={car._id} className="border-t hover:bg-gray-50 transition-all">
+                                <tr onClick={()=>navigate(`/dashboard/${car._id}`)} key={car._id} className="border-t hover:bg-gray-50 transition-all cursor-pointer">
+                                    
                                     <td className="py-3 px-4 text-gray-900">{car.title}</td>
                                     <td className="py-3 px-4 text-center">
                                         <span className="bg-yellow-100 text-yellow-600 px-4 py-1 rounded-full text-sm">
