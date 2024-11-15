@@ -22,6 +22,7 @@ const Dashboard = () => {
                     },
                 });
                 setCars(response.data);
+                console.log(response.data);
                 setLoading(false);
             } catch (error) {
                 console.error('Error fetching cars:', error);
@@ -126,7 +127,7 @@ const Dashboard = () => {
                             >
                                 <div>
                                     <img
-                                        src={car.img && car.img[0] ? car.img[0].url : "https://www.aiscribbles.com/img/variant/large-preview/8989/?v=1f4774"} 
+                                        src={car.img && car.img[0] ? car.img[0] : "https://www.aiscribbles.com/img/variant/large-preview/8989/?v=1f4774"} 
                                         alt={car.img && car.img[0] ? car.title: "Car image"}
                                         className='w-full h-40 object-contain rounded-md mb-2'
                                     />

@@ -22,7 +22,7 @@ const carSchema = mongoose.Schema(
     },
     img: [
       {
-        type: Object, // Array of objects to store images or related data (e.g., URL, metadata)
+        type: String, // Array of objects to store images or related data (e.g., URL, metadata)
       },
     ],
   },

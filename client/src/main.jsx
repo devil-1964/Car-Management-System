@@ -7,6 +7,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import LoadingSpinner from './components/LoadingSpinner.jsx';
 import { Toaster } from 'react-hot-toast';
 import PrivateRoute from './components/PrivateRoute.jsx';
+import CloudinaryUploader from './pages/CloudinaryUploader.jsx';
 
 // Lazy load pages
 const LoginPage = lazy(() => import('./pages/LoginPage.jsx'));
@@ -24,6 +25,14 @@ const router = createBrowserRouter([
         element: (
           <Suspense fallback={<LoadingSpinner />}>
             <LoginPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: '/cloud',
+        element: (
+          <Suspense fallback={<LoadingSpinner />}>
+            <CloudinaryUploader />
           </Suspense>
         ),
       },

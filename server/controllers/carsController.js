@@ -66,7 +66,7 @@ const updateCar = asyncHandler(async (req, res) => {
 
 // Create a new car
 const createCar = asyncHandler(async (req, res) => {
-  const { title, tags, description } = req.body;
+  const { title, tags, description, img } = req.body;
 
   // Validate that required fields are provided
   if (!title || !description || !tags) {
@@ -84,21 +84,13 @@ const createCar = asyncHandler(async (req, res) => {
     throw new Error("Car with the same title already exists");
   }
 
-  // Check for images and upload to Cloudinary
-  let imgUrls = [];
-  if (req.files && req.files.length > 0) {
-    imgUrls = await Promise.all(
-      req.files.map((file) => uploadImage(file))
-    );
-  }
-
   // Create the new car document
   const car = await Car.create({
     user_id: req.user.id,
     title,
     tags,
     description,
-    img: imgUrls, // Store image URLs
+    img, 
   });
   res.status(201).json(car);
 });
