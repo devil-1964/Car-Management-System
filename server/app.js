@@ -6,7 +6,7 @@ const cloudinary = require("cloudinary").v2; // Import cloudinary SDK
 const app = express();
 
 // Connect to database
-connectDB();
+ connectDB();
 
 // Cloudinary configuration
 cloudinary.config({
@@ -17,7 +17,7 @@ cloudinary.config({
 
 // Enable CORS for specific domain (you can add more if needed)
 app.use(cors({
-    origin: ["http://localhost:5173"],
+    origin: ["http://localhost:5173",process.env.FRONTEND_API],
     credentials: true,
 }));
 

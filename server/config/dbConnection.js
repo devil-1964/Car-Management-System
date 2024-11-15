@@ -1,5 +1,6 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
+// console.log(process.env.MONGO_URL)
 
 const connectDB = async () => {
   try {
@@ -7,8 +8,8 @@ const connectDB = async () => {
     
     console.log(`MongoDB connected: ${connect.connection.host}`);
   } catch (err) {
-    console.error(`Error connecting to MongoDB: ${err.message}`);
-    process.exit(1); // Exit the process with failure status
+    console.error(`Error connecting to MongoDB: ${err.stack}`);
+    process.exit(1); 
   }
 };
 
