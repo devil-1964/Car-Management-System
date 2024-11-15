@@ -87,10 +87,10 @@ const ProductPage = () => {
     };
 
     return (
-        <div className="mx-16">
+        <div className="mx-24 max-sm:mx-8">
             <h1 className="text-4xl font-semibold">Car Details</h1>
             <div className="flex flex-row max-sm:flex-wrap">
-                <div className="md:w-[50vw] max-sm:w-full">
+                <div className="w-[50vw] max-md:w-[90vw]">
                     <Slider {...settings} className="slider-container gap-4">
                         {car.images.map((img, index) => (
                             <div key={index} className="w-full border rounded-md shadow-md hover:shadow-lg transition-all flex justify-between flex-col h-[360px] max-sm:h-auto">

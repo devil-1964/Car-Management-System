@@ -1,4 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+import toast from 'react-hot-toast';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useRecoilState } from 'recoil';
+import { isLoggedInState, userState } from '../atoms/authState'; // import recoil state atoms
 import car from "../assets/raceCar.png";
 
 const LoginPage = () => {
@@ -6,21 +11,81 @@ const LoginPage = () => {
     email: '',
     password: '',
   });
+  const location = useLocation();
+
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isLoggedIn, setIsLoggedIn] = useRecoilState(isLoggedInState); // using recoil state
+  const [user, setUser] = useRecoilState(userState); // manage user data
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle form submission (e.g., send data to the backend)
-    console.log(formData);
+    setErrorMessage(''); // Clear any previous errors
+
+    try {
+      // Sending login request to backend with credentials (cookies)
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/users/login`, 
+        formData, 
+        { withCredentials: true } // Ensure cookies are sent with the request
+      );
+
+      const { accessToken, userData } = response.data;
+      
+      // Save accessToken to localStorage
+      localStorage.setItem('accessToken', accessToken);
+      
+      // Set token in axios header
+      axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+
+      // Update Recoil state
+      setIsLoggedIn(true); // Set user as logged in
+      setUser(userData); // Set user data in the Recoil state
+
+      // Add loggedIn flag to localStorage
+      localStorage.setItem('loggedIn', 'true');
+
+      // Show success toast
+      toast.success("Login Successful");
+
+      // Redirect to dashboard
+      navigate('/dashboard');
+    } catch (error) {
+      // If login fails, set error message
+      setErrorMessage(error?.response?.data?.message || "Login Failed");
+      toast.error(`Login Failed: ${error?.response?.statusText}`);
+    }
   };
+
+  useEffect(() => {
+    // Check if the user is already logged in by checking the 'loggedIn' flag in localStorage
+    const loggedIn = localStorage.getItem('loggedIn');
+    if (loggedIn === 'true') {
+      // You can directly navigate to the dashboard if logged in
+      navigate('/dashboard');
+    }
+
+    // Set up Axios interceptor to include token in headers
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+      axios.interceptors.request.use(
+        (config) => {
+          config.headers.Authorization = `Bearer ${token}`;
+          return config;
+        },
+        (error) => Promise.reject(error)
+      );
+    }
+  }, [navigate]);
 
   return (
     <div
-      className="flex h-full bg-orange-400"
+      className="flex h-screen w-full bg-orange-400"
       style={{
         backgroundImage: `url(${car})`,
         backgroundRepeat: 'repeat',
@@ -29,9 +94,10 @@ const LoginPage = () => {
       }}
     >
       {/* Left Side (Hidden on Mobile) */}
-      <div className="hidden md:flex flex-1  bg-cover bg-center text-white items-center justify-center">
-        <h1 className="text-6xl text-red-600 font-bold pl-6 ">
-          Welcome back to <br /><span className='text-6xl'>Car Management System</span>
+      <div className="hidden md:flex flex-1 bg-cover bg-center text-white items-center justify-center">
+        <h1 className="text-6xl text-red-600 font-bold pl-6">
+          Welcome back to <br />
+          <span className="text-6xl">Car Management System</span>
         </h1>
       </div>
 
@@ -41,6 +107,13 @@ const LoginPage = () => {
           <h2 className="text-3xl font-semibold text-center text-red-500 dark:text-white mb-6">
             Login to Your Account
           </h2>
+
+          {/* Show error message if login fails */}
+          {errorMessage && (
+            <div className="mb-4 text-center text-red-500">
+              <p>{errorMessage}</p>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit}>
             {/* Email Field */}
@@ -90,7 +163,7 @@ const LoginPage = () => {
           <div className="text-center mt-6">
             <p className="text-white dark:text-gray-400">
               Don't have an account?{' '}
-              <a href="/signup" className="text-black hover:text-red-600">
+              <a href="/register" className="text-black hover:text-red-600">
                 Sign up
               </a>
             </p>

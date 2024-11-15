@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Link, Outlet } from 'react-router-dom';
+import { Link, Outlet, useNavigate } from 'react-router-dom';
 import logo from "../assets/logo.png";
-import { LogIn, Menu, User, LogOut, Home } from 'lucide-react'; // Added User and LogOut icons
+import { LogIn, Menu, User, LogOut, Home } from 'lucide-react';
+import { useRecoilState } from 'recoil';
+import { userState, isLoggedInState } from '../atoms/authState'; // Import Recoil state
+import axios from 'axios';
 
 const RootLayout = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
-    const [isAuthenticated, setIsAuthenticated] = useState(true); // Add authentication state
-    const [user, setUser] = useState(); // User state
+    const [user, setUser] = useRecoilState(userState); // Recoil state for user
+    const [isLoggedIn, setIsLoggedIn] = useRecoilState(isLoggedInState); // Recoil state for login status
+    const navigate = useNavigate();
 
     const toggleDrawer = () => setIsOpen(!isOpen);
 
@@ -17,31 +21,62 @@ const RootLayout = () => {
         };
         window.addEventListener('scroll', handleScroll);
 
-        // Simulate authentication status (replace with real authentication logic)
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-            setUser(JSON.parse(storedUser));
-            setIsAuthenticated(true);
-        }
-
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
+    // Fetch user data after login
+    const fetchUserData = async () => {
+        const token = localStorage.getItem("accessToken");
+        if (token) {
+            try {
+                const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/users/current`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                if (response.data) {
+                    // console.log(response.data)
+                    setUser(response.data); // Set the user data in Recoil
+                    // console.log(response.data)
+                    setIsLoggedIn(true); // Set the login state to true
+                }
+            } catch (error) {
+                console.error('Error fetching user data:', error);
+                setIsLoggedIn(false); // If error, set loggedIn state to false
+            }
+        }
+        else {
+            setUser(null);
+            setIsLoggedIn(false);
+        }
+    };
+
+    useEffect(() => {
+        // Check if the user is logged in
+        const token = localStorage.getItem('accessToken');
+        if (token) {
+            fetchUserData(); // If token exists, fetch user data
+        }
+    }, []); // Empty dependency array, run once on component mount
+
     const handleLogout = () => {
-        setIsAuthenticated(false);
         setUser(null);
-        localStorage.removeItem('user');
+        setIsLoggedIn(false);
+        localStorage.removeItem("accessToken"); // Clear token from localStorage
+        localStorage.removeItem("loggedIn"); // Clear token from localStorage
+        setIsOpen(false);
+        navigate('/login'); // Redirect to login page
     };
 
     return (
         <>
             <header
-                className={`fixed  top-0 left-0 w-full transition-all font-semibold font-mono duration-300 ${isScrolled
+                className={`fixed top-0 left-0 w-full transition-all font-semibold font-mono duration-300 flex justify-center ${isScrolled
                     ? 'bg-white shadow-md text-[var(--color-black)]'
                     : 'bg-transparent text-red-700'
                     }`}
             >
-                <nav className="container mx-auto flex items-center justify-between p-4">
+                <nav className="container flex items-center justify-between py-4">
                     <Link to="/dashboard" className="flex items-center gap-1 text-2xl font-bold text-[var(--color-black)]">
                         <div><img src={logo} className='w-10 ' alt="Logo" /></div>
                         TheCars
@@ -49,19 +84,16 @@ const RootLayout = () => {
 
                     {/* Desktop Navigation */}
                     <div className="hidden md:flex space-x-4">
-                        {isAuthenticated ? (
+                        {isLoggedIn ? (
                             <>
                                 <div className="flex items-center gap-2 hover:text-black">
-                                    <Link
-                                        to="/dashboard"
-
-                                    >
+                                    <Link to="/dashboard">
                                         <Home className="w-5" />
                                     </Link>
                                 </div>
-                                <div className="flex items-center gap-2 ">
+                                <div className="flex items-center gap-2">
                                     <User className="w-5" />
-                                    <span className='text-black text-sm'>{user?.name}</span>
+                                    <span className='text-black text-sm'>{user?.username || "User"}</span>
                                 </div>
                                 <button
                                     onClick={handleLogout}
@@ -111,22 +143,18 @@ const RootLayout = () => {
                     &times;
                 </button>
                 <nav className="flex flex-col space-y-2">
-                    {isAuthenticated ? (
+                    {isLoggedIn ? (
                         <>
                             <div className="ml-2 flex items-center gap-2 text-white">
                                 <User className="w-5" />
-                                <span>{user?.name}</span>
+                                <span>{user?.username || "User"}</span>
                             </div>
-                            <div className="hover:bg-[var(--color-orange-200)]  p-2 rounded flex items-center gap-2 text-white">
-                                <Link
-                                    to="/dashboard"
-className='flex gap-2'
-                                >
+                            <div className="hover:bg-[var(--color-orange-200)] p-2 rounded flex items-center gap-2 text-white">
+                                <Link to="/dashboard" className='flex gap-2' onClick={toggleDrawer}>
                                     <Home className="w-5" />
                                     Home
                                 </Link>
                             </div>
-
                             <button
                                 onClick={handleLogout}
                                 className="hover:bg-[var(--color-orange-200)] p-2 rounded flex items-center gap-2"
@@ -139,7 +167,7 @@ className='flex gap-2'
                         <>
                             <Link
                                 to="/login"
-                                className=" flex items-center gap-1 hover:bg-[var(--color-orange-200)] p-2 rounded"
+                                className="flex items-center gap-1 hover:bg-[var(--color-orange-200)] p-2 rounded"
                                 onClick={toggleDrawer}
                             >
                                 Login
@@ -166,7 +194,7 @@ className='flex gap-2'
             )}
 
             {/* Main Content */}
-            <main className="pt-16 h-screen ">
+            <main className="pt-16 h-screen flex justify-center">
                 <Outlet />
             </main>
         </>

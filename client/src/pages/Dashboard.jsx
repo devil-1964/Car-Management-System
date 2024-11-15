@@ -1,11 +1,37 @@
-import React, { useState } from 'react';
-import { ArrowDown, ArrowUp, Grid, List, Plus, ChevronLeft, ChevronRight, Search } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ArrowDown, ArrowUp, Grid, List, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 import Slider from 'react-slick';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const Dashboard = () => {
     const [isCardView, setIsCardView] = useState(false);
     const [sortOrder, setSortOrder] = useState('asc');
     const [searchTerm, setSearchTerm] = useState('');
+    const [cars, setCars] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const fetchCars = async () => {
+            try {
+                const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/cars`, {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+                    },
+                });
+                setCars(response.data);
+                setLoading(false);
+            } catch (error) {
+                console.error('Error fetching cars:', error);
+                setError('Error fetching car data');
+                setLoading(false);
+            }
+        };
+
+        fetchCars();
+    }, []);
 
     const SampleNextArrow = (props) => {
         const { onClick } = props;
@@ -34,7 +60,7 @@ const Dashboard = () => {
         slidesToScroll: 2,
         lazyLoad: true,
         infinite: false,
-        dots:true,
+        dots: true,
         speed: 500,
         nextArrow: <SampleNextArrow />,
         prevArrow: <SamplePrevArrow />,
@@ -44,15 +70,6 @@ const Dashboard = () => {
         ],
     };
 
-    const cars = [
-        { id: 1, title: "Car 1", tag: "Sports", description: "A fast and sporty car." },
-        { id: 2, title: "Car 2", tag: "Luxury", description: "A luxurious and comfortable car." },
-        { id: 3, title: "Car 3", tag: "SUV", description: "A spacious and rugged car." },
-        { id: 4, title: "Car A", tag: "Sedan", description: "A compact and efficient car." },
-        { id: 5, title: "Car B", tag: "Coupe", description: "A sleek and stylish car." },
-        { id: 6, title: "Car C", tag: "Truck", description: "A tough and reliable car." },
-    ];
-
     const sortedCars = cars
         .filter(car => car.title.toLowerCase().includes(searchTerm.toLowerCase()))
         .sort((a, b) => (sortOrder === 'asc' ? a.title.localeCompare(b.title) : b.title.localeCompare(a.title)));
@@ -61,18 +78,18 @@ const Dashboard = () => {
     const toggleSortOrder = () => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
 
     return (
-        <div className='container max-sm:px-5 pl-20'>
+        <div className='container max-sm:px-8 px-6'>
             <div className='flex justify-between font-semibold items-center flex-wrap gap-2'>
                 <div className='text-xl sm:text-2xl text-orange-700'>My Cars</div>
                 <div className='flex gap-3'>
-                    <input 
-                        type="text" 
-                        placeholder="Search by title..." 
-                        className="p-2 border rounded-md" 
-                        value={searchTerm} 
-                        onChange={(e) => setSearchTerm(e.target.value)} 
+                    <input
+                        type="text"
+                        placeholder="Search by title..."
+                        className="p-2 border rounded-md"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
                     />
-                    <button className='flex bg-orange-400 hover:bg-gray-300 p-2 rounded-md items-center gap-1'>
+                    <button onClick={() => { navigate('/dashboard/new') }} className='flex bg-orange-400 hover:bg-gray-300 p-2 rounded-md items-center gap-1'>
                         <Plus /> <span className='max-sm:hidden'>Add new Car</span>
                     </button>
                 </div>
@@ -96,23 +113,29 @@ const Dashboard = () => {
             </div>
 
             <div className="mt-6">
-                {isCardView ? (
+                {loading ? (
+                    <div>Loading...</div> 
+                ) : error ? (
+                    <div>{error}</div> 
+                ) : isCardView ? (
                     <Slider {...settings} className="slider-container gap-4">
                         {sortedCars.map(car => (
                             <div
-                                key={car.id}
-                                className='p-4 hover:bg-orange-50 border rounded-md shadow-md hover:shadow-lg transition-all flex justify-between flex-col h-[260px]'
+                                key={car._id}
+                                className='p-4 hover:bg-gray-100 border rounded-md shadow-md hover:shadow-lg transition-all flex justify-between flex-col h-[260px]'
                             >
                                 <div>
                                     <img
-                                        src="https://www.aiscribbles.com/img/variant/large-preview/8989/?v=1f4774"
-                                        alt="Car"
+                                        src={car.img && car.img[0] ? car.img[0].url : "https://www.aiscribbles.com/img/variant/large-preview/8989/?v=1f4774"} 
+                                        alt={car.img && car.img[0] ? car.title: "Car image"}
                                         className='w-full h-40 object-contain rounded-md mb-2'
                                     />
                                 </div>
                                 <div>
                                     <h3 className='text-lg font-semibold'>{car.title}</h3>
-                                    <div className="bg-yellow-100 w-fit text-yellow-600 px-4 py-1 rounded-full text-sm">{car.tag}</div>
+                                    <div className="bg-yellow-100 w-fit text-yellow-600 px-4 py-1 rounded-full text-sm">
+                                        {car.tags && car.tags.length > 0 ? car.tags[0] : 'No Tag'}
+                                    </div>
                                 </div>
                             </div>
                         ))}
@@ -128,10 +151,12 @@ const Dashboard = () => {
                         </thead>
                         <tbody>
                             {sortedCars.map(car => (
-                                <tr key={car.id} className="border-t hover:bg-gray-50 transition-all">
+                                <tr key={car._id} className="border-t hover:bg-gray-50 transition-all">
                                     <td className="py-3 px-4 text-gray-900">{car.title}</td>
                                     <td className="py-3 px-4 text-center">
-                                        <span className="bg-yellow-100 text-yellow-600 px-4 py-1 rounded-full text-sm">{car.tag}</span>
+                                        <span className="bg-yellow-100 text-yellow-600 px-4 py-1 rounded-full text-sm">
+                                            {car.tags && car.tags.length > 0 ? car.tags[0] : 'No Tag'}
+                                        </span>
                                     </td>
                                     <td className="py-3 px-4 text-center text-gray-600 max-sm:hidden">{car.description}</td>
                                 </tr>

@@ -1,11 +1,26 @@
 import React, { useState } from 'react';
 import { UploadCloud, X } from "lucide-react";
+import axios from 'axios';
 
+// ImageUploader Component
 const ImageUploader = ({ images, setImages }) => {
-    const handleImageChange = (e) => {
+    const handleImageChange = async (e) => {
         const files = Array.from(e.target.files).slice(0, 10);
-        const newImages = files.map(file => URL.createObjectURL(file));
-        setImages(prevImages => [...prevImages, ...newImages]);
+
+        const uploadedImages = await Promise.all(
+            files.map(async (file) => {
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('upload_preset', 'your_upload_preset'); // Replace with your Cloudinary upload preset
+                formData.append('cloud_name', 'your_cloud_name'); // Replace with your Cloudinary cloud name
+
+                const response = await axios.post('https://api.cloudinary.com/v1_1/your_cloud_name/image/upload', formData);
+                console.log(response.data)
+                return response.data.secure_url; // Cloudinary returns the image URL
+            })
+        );
+
+        setImages((prevImages) => [...prevImages, ...uploadedImages]);
     };
 
     const removeImage = (index) => {
@@ -33,6 +48,7 @@ const ImageUploader = ({ images, setImages }) => {
     );
 };
 
+// NewCarPage Component
 const NewCarPage = () => {
     const [carDetails, setCarDetails] = useState({
         title: '',
@@ -49,7 +65,6 @@ const NewCarPage = () => {
             "https://via.placeholder.com/300x200.png?text=Car+Image+2",
             "https://via.placeholder.com/300x200.png?text=Car+Image+2",
             "https://via.placeholder.com/300x200.png?text=Car+Image+1",
-    
         ]
     });
 
@@ -58,8 +73,18 @@ const NewCarPage = () => {
         setCarDetails({ ...carDetails, [name]: value });
     };
 
-    const saveCarDetails = () => {
-        console.log("Car Details Saved:", carDetails);
+    const saveCarDetails = async () => {
+        try {
+            // Replace with your backend endpoint for creating a car
+            const response = await axios.post('/api/cars', carDetails, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+                },
+            });
+            console.log('Car Details Saved:', response.data);
+        } catch (error) {
+            console.error('Error saving car details:', error);
+        }
     };
 
     return (
@@ -67,7 +92,7 @@ const NewCarPage = () => {
             <h1 className="text-3xl font-semibold mb-6">Add New Car</h1>
             <div className="flex flex-row flex-wrap-reverse gap-8">
                 <div className="w-[40vw] max-sm:w-full">
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-6">
                         {carDetails.images.map((img, index) => (
                             <div key={index} className="relative w-full h-24">
                                 <img
