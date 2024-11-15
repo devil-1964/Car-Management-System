@@ -22,7 +22,7 @@ const Dashboard = () => {
                     },
                 });
                 setCars(response.data);
-                console.log(response.data);
+                // console.log(response.data);
                 setLoading(false);
             } catch (error) {
                 console.error('Error fetching cars:', error);

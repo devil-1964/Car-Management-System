@@ -47,18 +47,12 @@ const updateCar = asyncHandler(async (req, res) => {
     throw new Error("User doesn't have permission to edit other user's data");
   }
 
-  // Check for images and upload to Cloudinary
-  let imgUrls = [];
-  if (req.files && req.files.length > 0) {
-    imgUrls = await Promise.all(
-      req.files.map((file) => uploadImage(file))
-    );
-  }
+
 
   // Update the car details
   const updatedCar = await Car.findByIdAndUpdate(
     req.params.id,
-    { ...req.body, img: imgUrls },
+    { ...req.body},
     { new: true }
   );
   res.status(200).json(updatedCar);
