@@ -8,20 +8,17 @@ const NewCarPage = () => {
     title: '',
     tags: [],
     description: '',
-    img: [] // Array of image URLs (no longer an array of objects)
+    img: []
   });
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Cloudinary details
-  const cloudName = 'dldnaxblm'; // Replace with your Cloudinary cloud name
-  const uploadPreset = 'carsModel'; // Replace with your Cloudinary upload preset
+  const cloudName = 'dldnaxblm';
+  const uploadPreset = 'carsModel';
 
-  // Handle input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-
     if (name === 'tags') {
       const tagsArray = value.split(',').map(tag => tag.trim());
       setCarDetails({ ...carDetails, [name]: tagsArray });
@@ -30,82 +27,68 @@ const NewCarPage = () => {
     }
   };
 
-  // Handle image upload
   const handleImageChange = async (e) => {
-    const file = e.target.files[0]; // Get the first file (only one at a time)
-    if (!file) return; // If no file selected, exit
+    const file = e.target.files[0];
+    if (!file) return;
 
-    // Reset previous error messages
     setError(null);
-
-    // Validate file type and size
     if (!file.type.startsWith('image/')) {
       setError('Please select a valid image file.');
       return;
     }
-    if (file.size > 5 * 1024 * 1024) { // 5MB limit
+    if (file.size > 5 * 1024 * 1024) {
       setError('File size exceeds 5MB.');
       return;
     }
 
-    setLoading(true); // Start the loading state
+    setLoading(true);
 
     const formData = new FormData();
     formData.append('file', file);
     formData.append('upload_preset', uploadPreset);
 
     try {
-      // Upload the image to Cloudinary
       const response = await axios.post(
         `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
         formData
       );
 
-      // Get the URL of the uploaded image
       const uploadedImageUrl = response.data.secure_url;
 
       toast.success("Image Added Successfully");
 
-      // Update the state using the functional form to ensure you're using the latest carDetails state
       setCarDetails((prevDetails) => {
-        const updatedImages = [...prevDetails.img, uploadedImageUrl]; // Add the new image URL to the array
+        const updatedImages = [...prevDetails.img, uploadedImageUrl];
         console.log("Updated carDetails:", { ...prevDetails, img: updatedImages });
-
-        return { ...prevDetails, img: updatedImages }; // Return the updated state
+        return { ...prevDetails, img: updatedImages };
       });
 
-      // Reset the file input after successful upload
       e.target.value = '';
     } catch (error) {
       console.error('Error uploading image:', error);
       toast.error("Error uploading image");
       setError(error.response ? error.response.data.error.message : 'Failed to upload image, please try again.');
     } finally {
-      setLoading(false); // End the loading state
+      setLoading(false);
     }
   };
 
-  // Save car details to server
   const saveCarDetails = async () => {
-    setLoading(true); // Start loading
+    setLoading(true);
 
     try {
-      // Send car details via a POST request to your backend
       const response = await axios.post(
         `${import.meta.env.VITE_API_URL}/api/cars`,
-        carDetails, // Pass carDetails as the body
+        carDetails,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-            'Content-Type': 'application/json' // Optional: Set Content-Type to JSON
+            'Content-Type': 'application/json'
           }
         }
       );
 
-      // Handle the response after successful post
       toast.success('Car details saved successfully');
-
-      // Optionally, clear the form after successful save
       setCarDetails({
         title: '',
         tags: [],
@@ -113,13 +96,12 @@ const NewCarPage = () => {
         img: []
       });
 
-      // Reset error and loading states
       setError(null);
       setLoading(false);
     } catch (error) {
       console.error('Error saving car details:', error);
       toast.error('Failed to save car details, please try again.');
-      setLoading(false); // End loading on error
+      setLoading(false);
     }
   };
 
@@ -131,7 +113,6 @@ const NewCarPage = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-6">
             {carDetails.img.map((img, index) => (
               <div key={index} className="relative w-fit h-24 p-1 bg-gray-200 rounded-md">
-                {/* Ensure that img is a valid string URL before using it */}
                 {img ? (
                   <img
                     src={img}
@@ -166,6 +147,7 @@ const NewCarPage = () => {
               value={carDetails.title}
               onChange={handleInputChange}
               className="border p-2 rounded w-full"
+              autoComplete='off'
               placeholder="Enter car title"
             />
           </div>
@@ -174,10 +156,11 @@ const NewCarPage = () => {
             <input
               type="text"
               name="tags"
-              value={carDetails.tags.join(', ')}  // Show tags as a comma-separated string
+              value={carDetails.tags.join(',')}
               onChange={handleInputChange}
               className="border p-2 rounded w-full"
-              placeholder="e.g. Luxury, Sedan"
+              autoComplete='off'
+              placeholder="e.g.Honda, Luxury, Sedan"
             />
           </div>
           <div>
@@ -187,6 +170,7 @@ const NewCarPage = () => {
               value={carDetails.description}
               onChange={handleInputChange}
               className="border p-2 rounded w-full"
+              autoComplete='off'
               placeholder="Enter car description"
             />
           </div>
@@ -198,7 +182,7 @@ const NewCarPage = () => {
           <button
             onClick={() => document.getElementById('imageUpload').click()}
             className="bg-gray-400 items-center max-sm:px-5 gap-2 flex flex-row font-semibold border-4 border-gray-300 border-dashed text-white p-2 w-fit rounded-md hover:bg-gray-500"
-            disabled={loading} // Disable button during loading
+            disabled={loading}
           >
             {!loading ? <UploadCloud className="w-5 h-5" /> : <div className="animate-spin w-5 h-5"><LoaderPinwheel /></div>}
             <span className="max-sm:hidden">Upload Image</span>
@@ -215,7 +199,7 @@ const NewCarPage = () => {
         <button
           onClick={saveCarDetails}
           className="bg-green-500 font-semibold text-white px-6 py-3 rounded-lg hover:bg-green-600"
-          disabled={loading} // Disable save button during loading
+          disabled={loading}
         >
           {loading ? 'Saving...' : 'Save'}
         </button>
