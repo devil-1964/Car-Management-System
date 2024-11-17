@@ -66,20 +66,13 @@ The Swagger API Docs page provides a comprehensive overview of the API endpoints
 ### Users
 
 - **Create User**  
-  `POST /api/users`  
-  Create a new user.
+  `POST /api/users/register`  
+  Register a new user.
 
-- **Get User**  
-  `GET /api/users/:id`  
-  Retrieve user details by ID.
+- **Login User**  
+  `GET /api/users/login`  
+  Login user .
 
-- **Update User**  
-  `PUT /api/users/:id`  
-  Update user details by ID.
-
-- **Delete User**  
-  `DELETE /api/users/:id`  
-  Remove a user by ID.
 
 ### Cars
 
